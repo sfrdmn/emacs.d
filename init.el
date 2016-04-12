@@ -1,64 +1,3 @@
-(add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
-
-(defconst *spell-check-support-enabled* t)
-
-(defconst *is-a-mac* (eq system-type 'darwin))
-
-
-;; Temporarily reduce garbage collection on startup
-(defconst sanityinc/initial-gc-cons-threshold gc-cons-threshold
-  "Initial value of `gc-cons-threshold' at start-up time.")
-(setq gc-cons-threshold (* 128 1024 1024))
-(add-hook 'after-init-hook
-  (lambda () (setq gc-cons-threshold sanityinc/initial-gc-cons-threshold)))
-
-(require  'init-utils)
-(require 'init-elpa)
-(require 'init-exec-path)
-
-(require-package 'wgrep)
-(require-package 'project-local-variables)
-(require-package 'diminish)
-(require-package 'scratch)
-
-(require 'init-frame-hooks)
-(require 'init-xterm)
-(require 'init-themes)
-(require 'init-osx-keys)
-(require 'init-gui-frames)
-(require 'init-dired)
-(require 'init-isearch)
-(require 'init-grep)
-(require 'init-uniquify)
-
-(require 'init-ido)
-(require 'init-auto-complete)
-(require 'init-sessions)
-(require 'init-fonts)
-(require 'init-mmm)
-
-(require 'init-editing-utils)
-(require 'init-whitespace)
-
-(require 'init-vc)
-(require 'init-git)
-(require 'init-github)
-
-(require 'init-crontab)
-(require 'init-markdown)
-(require 'init-javascript)
-(require 'init-html)
-(require 'init-css)
-
-(require 'init-paredit)
-(require 'init-clojure)
-(require 'init-clojure-cider)
-
-;; Additional packages
-
-(require-package 'neotree)
-(global-set-key [f8] 'neotree-toggle)
-
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -73,3 +12,45 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
+(require 'package)
+(setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
+                         ("marmalade" . "https://marmalade-repo.org/packages/")
+                         ("melpa" . "https://melpa.org/packages/")))
+(package-initialize)
+
+(defun require-package (p)
+	(unless (package-installed-p p)
+    (package-refresh-contents)
+		(package-install p)))
+
+;; Paredit
+
+(require-package 'paredit)
+(autoload 'enable-paredit-mode "paredit")
+(add-hook 'lisp-mode-hook #'enable-paredit-mode)
+(add-hook 'eval-expression-minibuffer-setup-hook #'enable-paredit-mode)
+(add-hook 'lisp-interaction-mode-hook #'enable-paredit-mode)
+(add-hook 'scheme-mode-hook #'enable-paredit-mode)
+(add-hook 'ielm-mode-hook #'enable-paredit-mode)
+(add-hook 'clojure-mode #'enable-paredit)
+(add-hook 'cider-repl-mode-hook 'paredit-mode)
+
+;; Solarized
+
+(require-package 'color-theme-sanityinc-solarized)
+(load-theme 'sanityinc-solarized-light)
+
+;; Clojure
+
+(require-package 'clojure-mode)
+(require-package 'cider)
+(add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
+
+;; Smex
+
+(require-package 'smex)
+(global-set-key (kbd "M-x") 'smex)
+(global-set-key (kbd "M-X") 'smex-major-mode-commands)
+;; Old M-x.
+(global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)

@@ -24,9 +24,9 @@
 (package-initialize)
 
 (defun require-package (p)
-	(unless (package-installed-p p)
+  (unless (package-installed-p p)
     (package-refresh-contents)
-		(package-install p)))
+    (package-install p)))
 
 ;; Paredit
 

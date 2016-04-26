@@ -16,7 +16,11 @@
 (require 'package)
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
                          ("marmalade" . "https://marmalade-repo.org/packages/")
-                         ("melpa" . "https://melpa.org/packages/")))
+                         ("melpa" . "https://melpa.org/packages/")
+                         ("melpa-stable" . "https://stable.melpa.org/packages/")))
+
+(add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
+
 (package-initialize)
 
 (defun require-package (p)
@@ -33,7 +37,7 @@
 (add-hook 'lisp-interaction-mode-hook #'enable-paredit-mode)
 (add-hook 'scheme-mode-hook #'enable-paredit-mode)
 (add-hook 'ielm-mode-hook #'enable-paredit-mode)
-(add-hook 'clojure-mode #'enable-paredit)
+(add-hook 'clojure-mode-hook #'enable-paredit-mode)
 (add-hook 'cider-repl-mode-hook 'paredit-mode)
 
 ;; Solarized
@@ -45,7 +49,6 @@
 
 (require-package 'clojure-mode)
 (require-package 'cider)
-(add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
 
 ;; Smex
 

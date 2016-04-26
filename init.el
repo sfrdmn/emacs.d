@@ -42,6 +42,7 @@
 (add-hook 'scheme-mode-hook #'enable-paredit-mode)
 (add-hook 'ielm-mode-hook #'enable-paredit-mode)
 (add-hook 'clojure-mode-hook #'enable-paredit-mode)
+(add-hook 'rust-mode-hook #'enable-paredit-mode)
 (add-hook 'cider-repl-mode-hook 'paredit-mode)
 
 ;; Flycheck
@@ -80,3 +81,12 @@
 (add-hook 'c-mode-hook 'flycheck-mode)
 (add-hook 'rust-mode-hook 'flycheck-mode)
 (add-hook 'rust-mode-hook #'flycheck-rust-setup)
+
+;; C / C++
+
+(require-package 'cc-mode)
+
+;; Rust
+
+(require-package 'rust-mode)
+(require-package 'flycheck-rust)

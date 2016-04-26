@@ -44,6 +44,13 @@
 (add-hook 'clojure-mode-hook #'enable-paredit-mode)
 (add-hook 'cider-repl-mode-hook 'paredit-mode)
 
+;; Flycheck
+
+(require-package 'flycheck)
+(add-hook 'c++-mode-hook 'flycheck-mode)
+(add-hook 'c-mode-hook 'flycheck-mode)
+(add-hook 'rust-mode 'flycheck-mode)
+
 ;; Solarized
 
 (require-package 'color-theme-sanityinc-solarized)
@@ -59,5 +66,17 @@
 (require-package 'smex)
 (global-set-key (kbd "M-x") 'smex)
 (global-set-key (kbd "M-X") 'smex-major-mode-commands)
-;; Old M-x.
-(global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
+(global-set-key (kbd "C-c C-c M-x") 'execute-extended-command) ;; old M-x
+
+;; Company Mode completion
+
+(require-package 'company)
+(add-hook 'after-init-hook 'global-company-mode)
+
+;; Flycheck
+
+(require-package 'flycheck)
+(add-hook 'c++-mode-hook 'flycheck-mode)
+(add-hook 'c-mode-hook 'flycheck-mode)
+(add-hook 'rust-mode-hook 'flycheck-mode)
+(add-hook 'rust-mode-hook #'flycheck-rust-setup)

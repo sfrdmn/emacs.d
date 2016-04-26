@@ -28,6 +28,10 @@
     (package-refresh-contents)
     (package-install p)))
 
+;; General
+
+(show-paren-mode 1)
+
 ;; Paredit
 
 (require-package 'paredit)

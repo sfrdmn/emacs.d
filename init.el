@@ -130,7 +130,12 @@
 (add-hook 'rust-mode-hook #'enable-paredit-mode)
 (add-hook 'cider-repl-mode-hook #'enable-paredit-mode)
 
-;;;; Solarized
+;; Powerline
+
+(require-package 'powerline)
+(powerline-vim-theme)
+
+;; Clojure
 
 (if (display-graphic-p) ;; if GUI
     (progn

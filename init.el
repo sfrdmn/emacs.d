@@ -148,6 +148,12 @@
 (require-package 'flycheck)
 (require-package 'flycheck-tip)
 (with-eval-after-load 'flycheck (flycheck-pos-tip-mode))
+(require-package 'flycheck-color-mode-line)
+(with-eval-after-load "flycheck"
+                 (set-face-attribute 'flycheck-error nil :background "red" :foreground "white")
+                 (set-face-attribute 'flycheck-warning nil :background "yellow" :foreground "white"))
+
+(add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode)
 (add-hook 'clojure-mode-hook 'flycheck-mode)
 (add-hook 'c++-mode-hook 'flycheck-mode)
 (add-hook 'c-mode-hook 'flycheck-mode)

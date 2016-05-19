@@ -175,6 +175,7 @@
 (require-package 'rust-mode)
 (require-package 'flycheck-rust)
 (add-hook 'rust-mode-hook #'flycheck-rust-setup)
+(add-hook 'rust-mode-hook (lambda () (setq tab-width 0)))
 
 ;;;; Haskell
 

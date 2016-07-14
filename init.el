@@ -39,6 +39,11 @@
 (add-hook 'org-mode-hook (lambda () (setq fill-column 80)))
 (add-hook 'visual-line-mode-hook 'visual-fill-column-mode)
 
+;; Spellcheck
+
+(add-hook 'text-mode-hook 'flyspell-mode)
+(add-hook 'prog-mode-hook 'flyspell-prog-mode)
+
 ;; Paredit
 
 (require-package 'paredit)

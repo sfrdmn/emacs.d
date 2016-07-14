@@ -31,6 +31,13 @@
 ;; General
 
 (show-paren-mode 1)
+(require-package 'visual-fill-column)
+
+;; Org Mode
+
+(add-hook 'org-mode-hook 'visual-line-mode)
+(add-hook 'org-mode-hook (lambda () (setq fill-column 80)))
+(add-hook 'visual-line-mode-hook 'visual-fill-column-mode)
 
 ;; Paredit
 

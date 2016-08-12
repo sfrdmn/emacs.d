@@ -42,3 +42,6 @@ site-lisp/package/
 /viper
 smex-items
 *.swp
+/el-get
+/games
+projectile-bookmarks.eld

@@ -1,3 +1,5 @@
+(require 'cl-lib)
+
 ;;;; el-get
 ;; Used to require packages from places other than ELPA MELPA whatever
 
@@ -40,8 +42,6 @@
 ;; Customization settings in another file
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file)
-;; Shared emacs instance for otha mutha truckas
-(server-start)
 ;; Highlight matching parens
 (show-paren-mode 1)
 ;; For line wrap
@@ -52,6 +52,13 @@
 (setq-default tab-stop-list (number-sequence tab-width 100 tab-width))
 (defvaralias 'standard-indent 'tab-width)
 (defvaralias 'c-basic-offset 'tab-width)
+;; Backups
+(setq backup-directory-alist '(("." . "~/.emacs/backups"))
+      backup-by-copying t
+      delete-old-versions t
+      kept-new-versions 6
+      kept-old-versions 2
+      version-control t)
 
 ;;;; Dired+
 
@@ -85,7 +92,10 @@
 ;;;; Text-ish modes
 
 (setq-default typo-language 'English)
-(add-hook 'text-mode-hook 'typo-mode)
+(add-hook 'text-mode-hook
+          (lambda ()
+            (if (not (derived-mode-p 'html-mode 'yaml-mode))
+                (typo-mode))))
 
 ;;;; Helm
 
@@ -102,6 +112,7 @@
 ;;;; Projectile
 
 (require-package 'projectile)
+(projectile-global-mode)
 (require-package 'helm-projectile)
 (helm-projectile-on)
 
@@ -118,11 +129,10 @@
 (add-hook 'clojure-mode-hook #'enable-paredit-mode)
 (add-hook 'rust-mode-hook #'enable-paredit-mode)
 (add-hook 'cider-repl-mode-hook #'enable-paredit-mode)
-(add-hook 'javascript-mode-hook #'enable-paredit-mode)
 
 ;;;; Solarized
 
-(if (graphic-display-p) ;; if GUI
+(if (display-graphic-p) ;; if GUI
     (progn
       (require-package 'solarized-theme)
       (load-theme 'solarized-dark)))
@@ -167,14 +177,16 @@
 ;;;; Web stuff
 ;; web-mode for all kinda templating languages
 (require-package 'web-mode)
-(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.hbs\\'" . web-mode))
 ;; Make syntax highlighting less shitty
 (add-hook 'web-mode-hook
           (lambda ()
-            (set-face-attribute 'web-mode-html-tag-bracket-face nil :foreground "White")))
+            (set-face-attribute 'web-mode-html-tag-bracket-face nil :foreground "White")
+            ;; Reload local variables
+            (hack-local-variables)))
 
 ;;;; Node / JS
 
@@ -182,6 +194,13 @@
 (require-package 'nvm)
 (load "nvm") ;; Why do I have to do this?
 (require-package 'js-comint)
+(require-package 'js2-mode)
+(setq js2-strict-missing-semi-warning nil)
+(setq js2-bounce-indent-p t)
+(setq js2-include-node-externs t)
+(add-hook 'javascript-mode-hook 'electric-pair-mode)
+(add-hook 'js2-mode-hook 'electric-pair-mode)
+
 (defun set-node-version (version)
   (interactive "sNode version: ")
   (nvm-use version))
@@ -190,3 +209,9 @@
 
 (require-package 'yaml-mode)
 (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
+
+;;;; Docker
+
+(require-package 'docker)
+(require-package 'dockerfile-mode)
+(add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode))

@@ -152,7 +152,6 @@
 
 (require-package 'flycheck)
 (require-package 'flycheck-tip)
-(with-eval-after-load 'flycheck (flycheck-pos-tip-mode))
 (require-package 'flycheck-color-mode-line)
 (with-eval-after-load "flycheck"
                  (set-face-attribute 'flycheck-error nil :background "red" :foreground "white")

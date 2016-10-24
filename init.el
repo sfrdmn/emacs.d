@@ -217,11 +217,17 @@
 (add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.hbs\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.css\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.scss\\'" . web-mode))
+(setq web-mode-enable-auto-closing t)
+(setq web-mode-enable-auto-pairing nil)
+(setq web-mode-enable-css-colorization t)
+(setq web-mode-attr-indent-offset 4)
 ;; Make syntax highlighting less shitty
 (add-hook 'web-mode-hook
           (lambda ()
             (set-face-attribute 'web-mode-html-tag-bracket-face nil :foreground "White")
-            ;; Reload local variables
+            ;; Reload local variables... because why?
             (hack-local-variables)))
 
 ;;;; Node / JS

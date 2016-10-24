@@ -1,4 +1,5 @@
 (require 'cl-lib)
+(require 'grep)
 
 ;;;; el-get
 ;; Used to require packages from places other than ELPA MELPA whatever

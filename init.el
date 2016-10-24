@@ -66,6 +66,24 @@
    (concat
     (locate-dominating-file buffer-file-name ".dir-locals.el")
     relative-path)))
+;; Electric pair
+(add-hook 'prog-mode-hook 'electric-pair-mode)
+(defun electric-pair-sq ()
+  (setq-local electric-pair-pairs
+              (append electric-pair-pairs '((?\' . ?\')))))
+(add-hook 'javascript-mode-hook 'electric-pair-sq)
+(add-hook 'js2-mode-hook 'electric-pair-sq)
+(add-hook 'web-mode-hook 'electric-pair-sq)
+;; Grep find
+(setq grep-find-ignored-files
+      (append grep-find-ignored-files
+              '(".DS_Store" ".flowconfig" ".nvmrc" ".istanbul.yml"
+                ".projectile" ".bablrc" ".buckconfig" ".dir-locals.el"
+                ".eslintrc" ".gitignore" ".travis.yml" ".watchmanconfig"
+                "#*#")))
+(setq grep-find-ignored-directories
+      (append grep-find-ignored-directories
+              '("node_modules")))
 
 ;;;; Dired+
 
@@ -216,8 +234,6 @@
 (setq js2-strict-missing-semi-warning nil)
 (setq js2-bounce-indent-p t)
 (setq js2-include-node-externs t)
-(add-hook 'javascript-mode-hook 'electric-pair-mode)
-(add-hook 'js2-mode-hook 'electric-pair-mode)
 
 (defun set-node-version (version)
   (interactive "sNode version: ")

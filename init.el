@@ -60,6 +60,12 @@
       kept-new-versions 6
       kept-old-versions 2
       version-control t)
+;; .dir-locals.el helpers
+(defun project-path (relative-path)
+  (expand-file-name
+   (concat
+    (locate-dominating-file buffer-file-name ".dir-locals.el")
+    relative-path)))
 
 ;;;; Dired+
 

@@ -1,6 +1,6 @@
 (let ((minver "24"))
   (when (version<= emacs-version minver)
-    (error "Your init.el requires emacs v%s or higher" minver)))
+    (error "This init.el requires emacs v%s or higher" minver)))
 
 ;;;; el-get
 ;; Used to require packages from places other than ELPA MELPA whatever
@@ -13,9 +13,9 @@
     (goto-char (point-max))
     (eval-print-last-sexp)))
 
-(setq el-get-packages
- '(el-get
-   typo))
+(el-get-bundle el-get)
+(el-get-bundle typo)
+(el-get-bundle arcadia-unity/arcadia-dot-el)
 
 ;;;; MELPA ELPA etc
 ;; Set up normal package stuff
@@ -36,7 +36,7 @@
 ;; Bootstrap packages
 
 (package-initialize)
-(el-get 'sync el-get-packages)
+(el-get 'sync)
 
 ;;;; General
 
@@ -68,6 +68,9 @@
     (or relative-path ""))))
 ;; Pos-Tip
 (require-package 'pos-tip)
+;; Rainbow delim
+(require-package 'rainbow-delimiters)
+(global-prettify-symbols-mode 1)
 
 ;;;; GUI
 
@@ -96,9 +99,14 @@
       ;;                                (add-to-list 'company-backends 'company-emoji)))
       ;; (set-emoji-font nil)
       ;; (add-hook 'after-make-frame-functions 'set-emoji-font)
+      (require-package 'emojify)
+      (add-hook 'after-init-hook #'global-emojify-mode)
 
       ;;;; Misc
       (scroll-bar-mode -1)
+      (setq mouse-wheel-scroll-amount '(2 ((shift) . 1)))
+      (setq mouse-wheel-progressive-speed nil)
+      (setq mouse-wheel-follow-mouse 't)
       (require-package 'eww)
       (setq helm-dash-browser-func 'eww-browse-url)))
 
@@ -144,9 +152,14 @@
 (require-package 'magit)
 (global-set-key (kbd "C-x g") 'magit-status)
 
+;;;; Git Timemachine
+
+(require-package 'git-timemachine)
+
 ;;;; Org Mode
 
 (defvar org-fontify-whole-heading-line t)
+(setq org-src-fontify-natively t)
 (add-hook 'org-mode-hook 'visual-line-mode)
 (add-hook 'org-mode-hook (lambda () (setq fill-column 80)))
 (add-hook 'visual-line-mode-hook 'visual-fill-column-mode)
@@ -163,18 +176,22 @@
 (mmm-add-classes
  '((markdown-javascript
     :submode js-mode
-    :face mmm-code-submode-face
     :front "^```[Jj]ava[Ss]cript[\s\n\r]+"
+    :back "^```\s*$")
+
+   (markdown-jsx
+    :submode web-mode
+    :front "^```[Jj][Ss][Xx][\s\n\r]+"
     :back "^```\s*$")
 
    (markdown-clojure
     :submode clojure-mode
-    :face mmm-code-submode-face
     :front "^```[Cc]lojure[\s\n\r]+"
     :back "^```\s*$")))
 
-(mmm-add-mode-ext-class 'markdown-mode "\\.md//'" 'markdown-javascript)
-(mmm-add-mode-ext-class 'markdown-mode "\\.md//'" 'markdown-clojure)
+(mmm-add-mode-ext-class 'markdown-mode nil 'markdown-javascript)
+(mmm-add-mode-ext-class 'markdown-mode nil 'markdown-clojure)
+(setq mmm-parse-when-idle 't)
 
 ;;;; Spellcheck
 
@@ -188,11 +205,13 @@
           (lambda ()
             (if (not (derived-mode-p 'html-mode 'yaml-mode))
                 (typo-mode))))
+(global-set-key (kbd "C-c C-t") 'typo-mode)
 
 ;;;; Helm
 
 (require-package 'helm)
 (helm-mode 1)
+(require-package 'helm-unicode)
 (global-set-key (kbd "M-x") 'helm-M-x)
 (global-set-key (kbd "C-x C-b") 'helm-buffers-list)
 (global-set-key (kbd "C-x C-f") 'helm-find-files)
@@ -260,6 +279,27 @@
 
 (require-package 'clojure-mode)
 (require-package 'cider)
+(require-package 'helm-cider)
+(helm-cider-mode 1)
+;; Crazy symbolic programming
+(setq
+ clojure--prettify-symbols-alist
+ (append '(("alpha" . ?α)
+           ("beta" . ?β)
+           ("gamma" . ?γ)
+           ("delta" . ?δ)
+           ("phi" . ?φ)
+           ("-phi" . (?- (Br . Bl) ?φ))
+           ("pi" . ?π)
+           ("lambda" . ?λ)
+           ("#(" . (?λ (Br . Bl) 40))           
+           ("fn" . ?λ))))
+
+;; Arcadia
+(require 'arcadia)
+(setq projectile-globally-unignored-files
+      (append '("configuration.edn")
+              projectile-globally-unignored-files))
 
 ;;;; Speedbar
 
@@ -285,6 +325,18 @@
 ;;;; Haskell
 
 (require-package 'haskell-mode)
+(require 'haskell-interactive-mode)
+(require 'haskell-process)
+(add-hook 'haskell-mode-hook 'interactive-haskell-mode)
+
+(custom-set-variables
+ '(haskell-process-suggest-remove-import-lines t)
+ '(haskell-process-auto-import-loaded-modules t)
+ '(haskell-process-log t))
+
+(require-package 'flycheck-haskell)
+(eval-after-load 'flycheck
+  '(add-hook 'flycheck-mode-hook #'flycheck-haskell-setup))
 
 ;;;; Web stuff
 ;; web-mode for all kinda templating languages
@@ -297,8 +349,20 @@
 (add-to-list 'auto-mode-alist '("\\.scss\\'" . web-mode))
 (setq web-mode-enable-auto-closing t)
 (setq web-mode-enable-auto-pairing nil)
+(setq web-mode-enable-auto-quoting nil)
 (setq web-mode-enable-css-colorization t)
-(setq web-mode-attr-indent-offset 4)
+(setq web-mode-attr-indent-offset 2)
+
+(add-hook 'web-mode-hook 'electric-indent-local-mode)
+(setq web-mode-indentation-params
+      '(("lineup-args" . t)
+        ("lineup-calls" . nil)
+        ("lineup-concats" . t)
+        ("lineup-quotes" . t)
+        ("lineup-ternary" . t)
+        ("case-extra-offset" . t)))
+;; Hide/Show
+;; (add-to-list hs-special-modes-alist '(web-mode "{" "}" "/[*/]" nil))
 ;; Make syntax highlighting less shitty
 (add-hook 'web-mode-hook
           (lambda ()
@@ -306,6 +370,7 @@
             ;; Reload local variables... because why?
             ;; (hack-local-variables)
             ))
+;; Use single line comments for regions
 
 ;;;; Node / JS
 
@@ -317,6 +382,10 @@
 (setq js2-strict-missing-semi-warning nil)
 (setq js2-bounce-indent-p t)
 (setq js2-include-node-externs t)
+(add-hook 'javascript-mode-hook 'electric-indent-local-mode)
+(add-hook 'js2-mode-hook 'electric-indent-local-mode)
+(require-package 'prettier-js)
+(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
 
 (defun set-node-version (version)
   (interactive "sNode version: ")
@@ -406,3 +475,85 @@ Example: ((root-dir . \"path to erlang dir\")
 (require-package 'yasnippet)
 (yas-global-mode 1)
 (setq yas-snippet-dirs "~/.emacs.d/snippets")
+
+;;;; EMMS
+
+(require-package 'emms)
+(require 'emms-setup)
+(emms-standard)
+(emms-default-players)
+(when (eq system-type 'darwin)
+  (define-emms-simple-player afplay '(file)
+      (regexp-opt '(".mp3" ".m4a" ".aac"))
+      "afplay")
+    (setq emms-player-list `(,emms-player-afplay)))
+
+;;;; Ruby
+
+(require-package 'rvm)
+(rvm-use-default)
+
+;;;; Sublimity
+
+;; (require-package 'sublimity)
+;; (require 'sublimity-map)
+;; (sublimity-mode 1)
+;; (setq sublimity-map-size 20)
+;; (setq sublimity-map-fraction 0.3)
+;; (setq sublimity-map-text-scale -7)
+
+;;;; Elm
+
+(require-package 'elm-mode)
+(require-package 'flycheck-elm)
+ (eval-after-load 'flycheck
+    '(add-hook 'flycheck-mode-hook #'flycheck-elm-setup))
+
+;;;; Scheme
+
+(require-package 'geiser)
+
+;;;; C#
+
+(require-package 'omnisharp)
+(add-hook 'csharp-mode-hook 'omnisharp-mode)
+
+;;;; Poker!
+
+(require-package 'poker)
+(setq poker-suits '(♥ ♦ ♠ ♣))
+
+;;;; Folding
+
+(require-package 'origami)
+
+;;;; Color code display
+
+(require-package 'rainbow-mode)
+
+;;;; Auto-complete
+
+(require-package 'auto-complete)
+(ac-config-default)
+
+;;;; Indium
+
+(require-package 'indium)
+(add-hook 'js2-mode-hook #'indium-interaction-mode)
+
+;;;; OSX
+
+(when (eq system-type 'darwin)
+  ;; Allow editing of binary .plist files.
+  (add-to-list 'jka-compr-compression-info-list
+               ["\\.plist$"
+                "converting text XML to binary plist"
+                "plutil"
+                ("-; commentnvert" "binary1" "-o" "-" "-")
+                "converting binary plist to text XML"
+                "plutil"
+                ("-convert" "xml1" "-o" "-" "-")
+                nil nil "bplist"])
+  
+  ;;It is necessary to perform an update!
+  (jka-compr-update))

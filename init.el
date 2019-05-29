@@ -33,6 +33,11 @@
     (package-refresh-contents)
     (package-install p)))
 
+;; Add trusted certs
+
+(require 'gnutls)
+(add-to-list 'gnutls-trustfiles "/usr/local/etc/openssl/cert.pem")
+
 ;; Bootstrap packages
 
 (package-initialize)
@@ -47,6 +52,18 @@
 (show-paren-mode 1)
 ;; For line wrap
 (require-package 'visual-fill-column)
+(setq ring-bell-function
+      (lambda ()
+        (let ((orig-fg (face-foreground 'mode-line)))
+          (set-face-foreground 'mode-line "#FFFFFF")
+          (run-with-idle-timer 0.1 nil
+                               (lambda (fg) (set-face-foreground 'mode-line fg))
+                               orig-fg))))
+(require 'whitespace)
+(setq whitespace-style '(trailing tabs tab-mark))
+(add-hook 'prog-mode-hook 'whitespace-mode)
+
+
 ;; Tab control
 (setq-default indent-tabs-mode nil)
 (setq-default tab-width 2)
@@ -54,7 +71,7 @@
 (defvaralias 'standard-indent 'tab-width)
 (defvaralias 'c-basic-offset 'tab-width)
 ;; Backups
-(setq backup-directory-alist '(("." . "~/.emacs/backups"))
+(setq backup-directory-alist '(("" .  "~/.emacs/backups"))
       backup-by-copying t
       delete-old-versions t
       kept-new-versions 6
@@ -81,12 +98,13 @@
     ;; For Linux
     (set-fontset-font t 'symbol (font-spec :family "Symbola") frame 'prepend)))
 
-(if (display-graphic-p)
-    (progn
       ;;;; Solarized
       (require-package 'solarized-theme)
       (load-theme 'solarized-dark)
       (setq solarized-high-contrast-mode-line t)
+
+(if (display-graphic-p)
+    (progn
 
       ;;;; Exec path config
       (require-package 'exec-path-from-shell)
@@ -94,16 +112,13 @@
         (exec-path-from-shell-initialize))
 
       ;;;; Emoji
-      ;; (require-package 'company-emoji)
-      ;; (add-hook 'company-mode-hook (lambda ()
-      ;;                                (add-to-list 'company-backends 'company-emoji)))
-      ;; (set-emoji-font nil)
-      ;; (add-hook 'after-make-frame-functions 'set-emoji-font)
       (require-package 'emojify)
-      (add-hook 'after-init-hook #'global-emojify-mode)
+      ;; (add-hook 'after-init-hook #'global-emojify-mode)
 
       ;;;; Misc
       (scroll-bar-mode -1)
+      (menu-bar-mode -1)
+      (tool-bar-mode -1)
       (setq mouse-wheel-scroll-amount '(2 ((shift) . 1)))
       (setq mouse-wheel-progressive-speed nil)
       (setq mouse-wheel-follow-mouse 't)
@@ -140,12 +155,6 @@
 (require 'mmm-auto)
 ;; (setq mmm-global-mode 'maybe)
 (setq mmm-submode-decoration-level 1)
-
-;;;; Dired+
-
-(require-package 'dired+)
-;; Reuse single dired buffer
-(diredp-toggle-find-file-reuse-dir 1)
 
 ;;;; Magit
 
@@ -226,7 +235,10 @@
 ;;;; Projectile
 
 (require-package 'projectile)
-(projectile-mode)
+(projectile-mode +1)
+(setq projectile-enable-caching t)
+(define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
+(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 (require-package 'helm-projectile)
 (helm-projectile-on)
 
@@ -320,7 +332,6 @@
 (require-package 'cargo)
 (require-package 'flycheck-rust)
 (add-hook 'rust-mode-hook #'flycheck-rust-setup)
-(add-hook 'rust-mode-hook (lambda () (setq tab-width 0)))
 
 ;;;; Haskell
 
@@ -342,11 +353,10 @@
 ;; web-mode for all kinda templating languages
 (require-package 'web-mode)
 (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.hbs\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.css\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.scss\\'" . web-mode))
+;; (add-to-list 'auto-mode-alist '("\\.css\\'" . web-mode))
+;; (add-to-list 'auto-mode-alist '("\\.scss\\'" . web-mode))
 (setq web-mode-enable-auto-closing t)
 (setq web-mode-enable-auto-pairing nil)
 (setq web-mode-enable-auto-quoting nil)
@@ -379,17 +389,41 @@
 (load "nvm") ;; Why do I have to do this?
 (require-package 'js-comint)
 (require-package 'js2-mode)
+(require-package 'rjsx-mode)
+(require-package 'indium)
+(require-package 'company-tern)
+(require-package 'prettier-js)
+
 (setq js2-strict-missing-semi-warning nil)
 (setq js2-bounce-indent-p t)
 (setq js2-include-node-externs t)
 (add-hook 'javascript-mode-hook 'electric-indent-local-mode)
 (add-hook 'js2-mode-hook 'electric-indent-local-mode)
-(require-package 'prettier-js)
+(with-eval-after-load 'company
+  (add-to-list 'company-backends 'company-tern))
+(add-hook 'js2-mode-hook (lambda ()
+                           (tern-mode)
+                           (company-mode)))
 (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+(add-to-list 'auto-mode-alist '("\\.mjs\\'" . js2-mode))
+(add-to-list 'auto-mode-alist '("\\.jsx\\'" . rjsx-mode))
 
 (defun set-node-version (version)
   (interactive "sNode version: ")
   (nvm-use version))
+
+;;;; TypeScript
+
+(require-package 'tide)
+
+(defun setup-tide ()
+  (interactive)
+  (tide-setup)
+  (flycheck-mode +1)
+   (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (eldoc-mode +1)
+  (tide-hl-identifier-mode +1)
+  (company-mode +1))
 
 ;;;; Erlang
 
@@ -506,8 +540,8 @@ Example: ((root-dir . \"path to erlang dir\")
 
 (require-package 'elm-mode)
 (require-package 'flycheck-elm)
- (eval-after-load 'flycheck
-    '(add-hook 'flycheck-mode-hook #'flycheck-elm-setup))
+(eval-after-load 'flycheck
+  '(add-hook 'flycheck-mode-hook #'flycheck-elm-setup))
 
 ;;;; Scheme
 
@@ -531,15 +565,41 @@ Example: ((root-dir . \"path to erlang dir\")
 
 (require-package 'rainbow-mode)
 
-;;;; Auto-complete
+;;;; Swift
 
-(require-package 'auto-complete)
-(ac-config-default)
+(require-package 'swift-mode)
+(require-package 'company-sourcekit)
+(with-eval-after-load 'company
+  (add-to-list 'company-backends 'company-sourcekit))
+(require-package 'flycheck-swift3)
+(with-eval-after-load 'flycheck
+  (add-hook 'flycheck-mode-hook #'flycheck-swift3-setup))
 
-;;;; Indium
+;;;; Less
 
-(require-package 'indium)
-(add-hook 'js2-mode-hook #'indium-interaction-mode)
+(require-package 'less-css-mode)
+
+;;;; Gradle
+
+(require-package 'gradle-mode)
+
+;;;; Groovy
+
+(require-package 'groovy-mode)
+
+;;;; Faust
+
+(require-package 'faust-mode)
+(require-package 'faustine)
+(add-to-list 'auto-mode-alist '("\\.dsp\\'" . faustine-mode))
+
+;;;; GraphQL
+
+(require-package 'graphql-mode)
+
+;;;; Kotlin
+
+(require-package 'kotlin-mode)
 
 ;;;; OSX
 

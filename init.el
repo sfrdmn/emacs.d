@@ -1,4 +1,4 @@
-;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;
 ;;;;; Utils ;;;;;
 ;;;;;;;;;;;;;;;;;
 
@@ -123,6 +123,7 @@
 (use-package helm
   :ensure t
   :demand t
+  :straight t
   :diminish helm-mode
   :bind (("M-x" . helm-M-x)
          ("C-x C-b" . helm-buffers-list)
@@ -139,7 +140,8 @@
   ;; Omit Helm boring buffer from frame cycling
   (set-frame-parameter
    (selected-frame) 'buffer-predicate
-   (lambda (buf) (not (cl-find-if (lambda (pattern) (string-match pattern (buffer-name buf))) helm-boring-buffer-regexp-list)))))
+   (lambda (buf) (not (cl-find-if (lambda (pattern) (string-match pattern (buffer-name buf))) helm-boring-buffer-regexp-list))))
+  )
 
 (use-package helm-ag
   :ensure t
@@ -193,12 +195,17 @@
   :commands swift-mode
   :mode "\\.swift\\'")
 
+(use-package python
+  :mode ("\\.py\\'" . python-mode)
+  :interpreter ("python" . python-mode)
+  :init (setq python-indent-offset 2))
+
 (use-package elpy
   :ensure t
   :commands elpy
   :mode "\\.py\\'"
-  :init
-  (advice-add 'python-mode :before 'elpy-enable))
+  :after (python-mode)
+  :init (elpy-enable))
 
 (use-package js-mode
   :mode ("\\.js\\'" "\\.jsx\\'")
@@ -216,7 +223,7 @@
 
 (use-package indium
   ;; Note: indium npm package must be installed
-  :ensure t
+  :ensure f
   :commands (indium indium-launch indium-connect)
   :after (js-mode))
 
@@ -242,7 +249,6 @@
 (use-package yaml-mode
   :ensure t
   :mode ("\\.yml\\'" "\\.yaml\\'"))
-
 
 (use-package web-mode
   :ensure t

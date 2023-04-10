@@ -1,0 +1,28 @@
+This is an unofficial script that builds tree-sitter grammars that can
+be used by Emacs 29 and above.
+
+Tree-sitter language grammars are just dynamic library object files.
+You need git and a C/C++ compiler to build them.
+
+To build the language grammar for a particular language, run
+
+    ./build.sh <language>
+
+e.g.,
+
+    ./build.sh html
+
+The dynamic library will be in directory /dist.
+
+To build all modules at once, run
+
+    ./batch.sh
+
+This gives you C, JSON, Go, HTML, Javascript, CSS, Python, Typescript
+(tsx), C# (csharp), C++ (cpp), Rust, etc, etc. The complete list is in
+batch.sh. If you don't see your favoriate language in the list, submit
+a PR.
+
+You can enable parallel build with the JOBS variable, like this:
+
+    JOBS=8 ./batch.sh

@@ -101,7 +101,6 @@
 (use-package eglot
   :hook
 	(go-ts-mode . eglot-ensure)
-  (go-mod-ts-mode . eglot-ensure)
 	(javascript-ts-mode . eglot-ensure)
 	(typescript-ts-mode . eglot-ensure)
 	(tsx-ts-mode . eglot-ensure))
